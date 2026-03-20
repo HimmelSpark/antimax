@@ -69,12 +69,17 @@ export function useLivekit(boardId) {
       setConnected(true);
       updateParticipants();
 
-      try {
-        await room.localParticipant.enableCameraAndMicrophone();
-        setLocalVideoEnabled(true);
-        setLocalAudioEnabled(true);
-      } catch (mediaErr) {
-        console.warn('Camera/mic failed:', mediaErr.message);
+      // Only enable camera/mic if mediaDevices API is available (requires HTTPS)
+      if (navigator.mediaDevices?.getUserMedia) {
+        try {
+          await room.localParticipant.enableCameraAndMicrophone();
+          setLocalVideoEnabled(true);
+          setLocalAudioEnabled(true);
+        } catch (mediaErr) {
+          console.warn('Camera/mic failed:', mediaErr.message);
+        }
+      } else {
+        console.warn('mediaDevices not available — HTTPS required for camera/mic');
       }
       updateParticipants();
     } catch (err) {

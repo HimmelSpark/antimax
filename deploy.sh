@@ -6,6 +6,24 @@ DOMAIN="${DOMAIN:-v3075401.hosted-by-vdsina.ru}"
 
 echo "==> Deploying Antimax to ${DOMAIN}"
 
+# ─── Ensure docker compose v2 is available ───────────────────
+if ! docker compose version &>/dev/null; then
+  echo "==> Installing Docker Compose v2 plugin..."
+  mkdir -p ~/.docker/cli-plugins
+  COMPOSE_VERSION=$(curl -s https://api.github.com/repos/docker/compose/releases/latest | grep '"tag_name"' | sed -E 's/.*"v?([^"]+)".*/\1/')
+  ARCH=$(uname -m)
+  case "$ARCH" in
+    x86_64)        ARCH="x86_64"  ;;
+    aarch64|arm64) ARCH="aarch64" ;;
+  esac
+  curl -SL "https://github.com/docker/compose/releases/download/v${COMPOSE_VERSION}/docker-compose-linux-${ARCH}" \
+    -o ~/.docker/cli-plugins/docker-compose
+  chmod +x ~/.docker/cli-plugins/docker-compose
+  echo "==> Docker Compose v2 installed: $(docker compose version)"
+fi
+
+DC="docker compose -f docker-compose.prod.yml"
+
 # ─── Generate secrets if .env doesn't exist ──────────────────
 if [ ! -f .env ]; then
   echo "==> Generating .env..."
@@ -45,7 +63,6 @@ MINIO_USE_SSL=false
 
 # LiveKit
 LIVEKIT_HOST=http://livekit:7880
-LIVEKIT_PUBLIC_URL=wss://${DOMAIN}
 LIVEKIT_API_KEY=${LIVEKIT_API_KEY}
 LIVEKIT_API_SECRET=${LIVEKIT_API_SECRET}
 
@@ -90,32 +107,35 @@ EOF
 echo "==> livekit.yaml generated"
 
 # ─── Open firewall ports ─────────────────────────────────────
-if command -v ufw &> /dev/null; then
+if command -v ufw &>/dev/null; then
   echo "==> Configuring firewall..."
-  ufw allow 80/tcp   2>/dev/null || true
-  ufw allow 443/tcp  2>/dev/null || true
-  ufw allow 7881/tcp 2>/dev/null || true
+  ufw allow 80/tcp        2>/dev/null || true
+  ufw allow 443/tcp       2>/dev/null || true
+  ufw allow 7881/tcp      2>/dev/null || true
   ufw allow 7882:7932/udp 2>/dev/null || true
 fi
 
 # ─── Build & start ───────────────────────────────────────────
+echo "==> Stopping old containers..."
+$DC down --remove-orphans 2>/dev/null || true
+
 echo "==> Building containers..."
-docker-compose -f docker-compose.prod.yml build
+$DC build
 
 echo "==> Starting services..."
-docker-compose -f docker-compose.prod.yml up -d
+$DC up -d
 
 echo ""
 echo "==> Waiting for services to start..."
 sleep 8
 
-docker-compose -f docker-compose.prod.yml ps
+$DC ps
 
 echo ""
 echo "============================================"
-echo "  Antimax is running!"
+echo "  Antimax deployed!"
 echo "  URL: https://${DOMAIN}"
 echo ""
-echo "  Caddy will auto-provision SSL certificate."
+echo "  Caddy auto-provisions SSL certificate."
 echo "  First request may take ~30s for cert."
 echo "============================================"

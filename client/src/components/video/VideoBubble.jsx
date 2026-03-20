@@ -24,13 +24,16 @@ export default function VideoBubble({ participant, index }) {
   useEffect(() => {
     const el = videoRef.current;
     const track = videoTrack?.track;
-    if (el && track) {
-      track.attach(el);
-      return () => {
-        try { track.detach(el); } catch {}
-      };
-    }
-  }, [videoTrack]);
+    if (!el || !track) return;
+    track.attach(el);
+    return () => {
+      try {
+        if (track.detach) track.detach(el);
+      } catch {
+        // track already detached or disposed
+      }
+    };
+  }, [videoTrack?.track]);
 
   useEffect(() => {
     const offsetX = 20 + (index % 4) * (BUBBLE_SIZE + 12);

@@ -1,6 +1,10 @@
 {$DOMAIN:v3075401.hosted-by-vdsina.ru} {
-	# API
+	# API + uploads
 	handle /api/* {
+		reverse_proxy server:8080
+	}
+
+	handle /upload/* {
 		reverse_proxy server:8080
 	}
 
