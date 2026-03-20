@@ -1,0 +1,29 @@
+{$DOMAIN:v3075401.hosted-by-vdsina.ru} {
+	# API
+	handle /api/* {
+		reverse_proxy server:8080
+	}
+
+	# WebSocket (Yjs sync) — long timeout for persistent connections
+	handle /ws/* {
+		reverse_proxy server:8080 {
+			transport http {
+				read_timeout 0
+			}
+		}
+	}
+
+	# LiveKit signaling WebSocket
+	handle /rtc/* {
+		reverse_proxy livekit:7880 {
+			transport http {
+				read_timeout 0
+			}
+		}
+	}
+
+	# SPA static files (fallback)
+	handle {
+		reverse_proxy client:80
+	}
+}

@@ -18,6 +18,9 @@ if [ ! -f .env ]; then
   POSTGRES_PASSWORD=$(openssl rand -hex 16)
 
   cat > .env <<EOF
+# Domain
+DOMAIN=${DOMAIN}
+
 # Server
 SERVER_PORT=8080
 JWT_SECRET=${JWT_SECRET}
@@ -42,7 +45,7 @@ MINIO_USE_SSL=false
 
 # LiveKit
 LIVEKIT_HOST=http://livekit:7880
-LIVEKIT_PUBLIC_URL=ws://${DOMAIN}
+LIVEKIT_PUBLIC_URL=wss://${DOMAIN}
 LIVEKIT_API_KEY=${LIVEKIT_API_KEY}
 LIVEKIT_API_SECRET=${LIVEKIT_API_SECRET}
 
@@ -50,18 +53,18 @@ LIVEKIT_API_SECRET=${LIVEKIT_API_SECRET}
 GOTENBERG_URL=http://gotenberg:3000
 
 # CORS
-CORS_ORIGIN=http://${DOMAIN}
+CORS_ORIGIN=https://${DOMAIN}
 EOF
 
   echo "==> .env generated with random secrets"
 else
   echo "==> .env already exists, skipping generation"
-  # Source existing env to get LIVEKIT keys
-  source .env
 fi
 
 # ─── Read keys from .env ─────────────────────────────────────
+set -a
 source .env
+set +a
 
 # ─── Detect public IP ────────────────────────────────────────
 PUBLIC_IP=$(curl -s --max-time 5 ifconfig.me || curl -s --max-time 5 ipinfo.io/ip || hostname -I | awk '{print $1}')
@@ -86,6 +89,15 @@ EOF
 
 echo "==> livekit.yaml generated"
 
+# ─── Open firewall ports ─────────────────────────────────────
+if command -v ufw &> /dev/null; then
+  echo "==> Configuring firewall..."
+  ufw allow 80/tcp   2>/dev/null || true
+  ufw allow 443/tcp  2>/dev/null || true
+  ufw allow 7881/tcp 2>/dev/null || true
+  ufw allow 7882:7932/udp 2>/dev/null || true
+fi
+
 # ─── Build & start ───────────────────────────────────────────
 echo "==> Building containers..."
 docker compose -f docker-compose.prod.yml build
@@ -95,12 +107,15 @@ docker compose -f docker-compose.prod.yml up -d
 
 echo ""
 echo "==> Waiting for services to start..."
-sleep 5
+sleep 8
 
 docker compose -f docker-compose.prod.yml ps
 
 echo ""
 echo "============================================"
 echo "  Antimax is running!"
-echo "  URL: http://${DOMAIN}"
+echo "  URL: https://${DOMAIN}"
+echo ""
+echo "  Caddy will auto-provision SSL certificate."
+echo "  First request may take ~30s for cert."
 echo "============================================"
