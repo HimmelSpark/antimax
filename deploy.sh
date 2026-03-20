@@ -100,16 +100,16 @@ fi
 
 # ─── Build & start ───────────────────────────────────────────
 echo "==> Building containers..."
-docker compose -f docker-compose.prod.yml build
+docker-compose -f docker-compose.prod.yml build
 
 echo "==> Starting services..."
-docker compose -f docker-compose.prod.yml up -d
+docker-compose -f docker-compose.prod.yml up -d
 
 echo ""
 echo "==> Waiting for services to start..."
 sleep 8
 
-docker compose -f docker-compose.prod.yml ps
+docker-compose -f docker-compose.prod.yml ps
 
 echo ""
 echo "============================================"
