@@ -22,9 +22,13 @@ export default function VideoBubble({ participant, index }) {
   );
 
   useEffect(() => {
-    if (videoRef.current && videoTrack?.track) {
-      videoTrack.track.attach(videoRef.current);
-      return () => videoTrack.track.detach(videoRef.current);
+    const el = videoRef.current;
+    const track = videoTrack?.track;
+    if (el && track) {
+      track.attach(el);
+      return () => {
+        try { track.detach(el); } catch {}
+      };
     }
   }, [videoTrack]);
 

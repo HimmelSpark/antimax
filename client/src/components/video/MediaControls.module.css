@@ -35,3 +35,24 @@
 .btn.active:hover {
   background: rgba(59, 130, 246, 0.25);
 }
+
+.btn.join {
+  color: #22c55e;
+}
+
+.btn.join:hover {
+  background: rgba(34, 197, 94, 0.15);
+}
+
+.btn.join:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+
+.btn.leave {
+  color: var(--danger);
+}
+
+.btn.leave:hover {
+  background: rgba(239, 68, 68, 0.15);
+}

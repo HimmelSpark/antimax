@@ -1,10 +1,25 @@
 import { useLivekitContext } from '../../hooks/LivekitContext';
 import styles from './MediaControls.module.css';
-import { Video, VideoOff, Mic, MicOff, Monitor } from 'lucide-react';
+import { Video, VideoOff, Mic, MicOff, Monitor, Phone, PhoneOff } from 'lucide-react';
 
 export default function MediaControls() {
   const livekit = useLivekitContext();
-  if (!livekit || !livekit.connected) return null;
+  if (!livekit) return null;
+
+  if (!livekit.connected) {
+    return (
+      <div className={styles.controls}>
+        <button
+          className={`${styles.btn} ${styles.join}`}
+          onClick={livekit.join}
+          disabled={livekit.joining}
+          title="Join call"
+        >
+          <Phone size={16} />
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.controls}>
@@ -20,6 +35,9 @@ export default function MediaControls() {
         title="Share screen"
       >
         <Monitor size={16} />
+      </button>
+      <button className={`${styles.btn} ${styles.leave}`} onClick={livekit.leave} title="Leave call">
+        <PhoneOff size={16} />
       </button>
     </div>
   );
