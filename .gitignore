@@ -1,0 +1,47 @@
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Go
+server/tmp/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+vendor/
+
+# Node.js
+node_modules/
+client/dist/
+client/build/
+.npm
+*.tgz
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker volumes
+postgres_data/
+redis_data/
+minio_data/
+
+# Logs
+*.log
+
+# Coverage
+coverage/
+*.cover
+*.coverprofile
