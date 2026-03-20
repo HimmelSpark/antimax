@@ -1,0 +1,12 @@
+.git
+.gitignore
+.env
+.env.*
+*.md
+.idea/
+*.iml
+.vscode/
+node_modules/
+client/node_modules/
+server/tmp/
+.DS_Store
