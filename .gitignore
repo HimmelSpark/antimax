@@ -38,6 +38,9 @@ postgres_data/
 redis_data/
 minio_data/
 
+# Production secrets
+livekit.yaml
+
 # Logs
 *.log
 

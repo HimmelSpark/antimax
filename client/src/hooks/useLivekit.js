@@ -66,12 +66,9 @@ export function useLivekit(boardId) {
         });
         room.on(RoomEvent.Disconnected, () => setConnected(false));
 
-        // Build LiveKit URL relative to current host (works with ngrok)
-        let livekitUrl = data.url;
-        if (!livekitUrl || livekitUrl === 'ws://localhost:7880') {
-          const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-          livekitUrl = `${proto}//${window.location.host}`;
-        }
+        // Always use current host for LiveKit (nginx proxies /rtc → livekit)
+        const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const livekitUrl = `${proto}//${window.location.host}`;
 
         // Retry connection up to 3 times
         let connectSuccess = false;
